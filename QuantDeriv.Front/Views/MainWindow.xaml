@@ -1,0 +1,37 @@
+﻿<Window x:Class="QuantDeriv.Front.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuantDeriv.Front"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="250">
+    <DockPanel Margin="10" HorizontalAlignment="Center">
+        <TextBlock DockPanel.Dock="Top" Text="Main" FontSize="18" FontWeight="Bold" Margin="5"/>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="10">
+                <Label Content="Tickers" FontWeight="Bold"/>
+                <ListBox ItemsSource="{Binding Tickers}"
+                     SelectedItem="{Binding SelectedTicker}"
+                     Height="250">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <EventSetter Event="MouseDoubleClick"
+                     Handler="ListBoxItem_MouseDoubleClick"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+
+                <Button Content="전체 거래내역 보기" 
+                    Command="{Binding OpenTradeHistoryCommand}" 
+                    Margin="0,20,0,0"/>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

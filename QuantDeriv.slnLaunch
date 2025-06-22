@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "새 프로필",
+    "Projects": [
+      {
+        "Path": "QuantDeriv.Front\\QuantDeriv.Front.csproj",
+        "Action": "Start",
+        "DebugTarget": "QuantDeriv.Front"
+      },
+      {
+        "Path": "QuantDeriv.Back\\QuantDeriv.Back.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]
