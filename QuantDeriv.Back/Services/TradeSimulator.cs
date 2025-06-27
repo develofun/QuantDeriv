@@ -26,9 +26,12 @@ namespace QuantDeriv.Back.Services
             // 초기 시스템 대기 시간
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken); 
 
+            var tickers = _tradeDataRepository.Tickers.ToList();
+            var tickerCount = tickers.Count;
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                var ticker = _tradeDataRepository.Tickers[_random.Next(_tradeDataRepository.Tickers.Count)];
+                var ticker = tickers[_random.Next(tickerCount)];
 
                 OrderType type = _random.Next(0, 2) == 0 ? OrderType.Ask : OrderType.Bid;
                 int price = type == OrderType.Ask ? _random.Next(40, 100) : _random.Next(1, 60);
