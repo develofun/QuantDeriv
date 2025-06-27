@@ -17,6 +17,7 @@ namespace QuantDeriv.Back.Services
             _tradeDataRepository = tradeDataRepository;
         }
 
+        // 주문을 처리하고 매칭
         public void ProcessOrder(Order newOrder)
         {
             if (newOrder == null || !newOrder.IsValid())
@@ -46,7 +47,7 @@ namespace QuantDeriv.Back.Services
             {
                 // 오류 로그 남김
                 throw new Exception($"Error processing order for ticker {newOrder.Ticker}: {ex.Message}", ex);
-            }            
+            }
         }
 
         // 매도 호가와 매수 호가 매칭
@@ -81,11 +82,12 @@ namespace QuantDeriv.Back.Services
             }
         }
 
-        private void MatchWithAsks(Order buyOrder, OrderBook book)
+		// 매수 호가가 최소 매도 호가보다 높거나 같을 때 최소 매도 호가부터 매수
+		private void MatchWithAsks(Order buyOrder, OrderBook book)
         {
-            while (buyOrder.Quantity > 0 && book.Asks.Count > 0 && buyOrder.Price >= book.Asks.First().Key)
+            while (buyOrder.Quantity > 0 && book.Asks.Count > 0 && buyOrder.Price >= book.Asks.Last().Key)
             {
-                var lowestPriceAsk = book.Asks.First();
+                var lowestPriceAsk = book.Asks.Last();
                 var askOrder = lowestPriceAsk.Value;
 
                 int tradeQuantity = Math.Min(buyOrder.Quantity, askOrder.Quantity);

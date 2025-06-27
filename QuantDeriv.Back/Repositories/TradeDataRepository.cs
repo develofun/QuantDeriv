@@ -14,11 +14,15 @@ namespace QuantDeriv.Back.Repositories
         private const int MaxSampleOrderBookCount = 10;
         private const int MaxSampleHistoryCount = 10;
 
-        public IList<string> Tickers { get; } = [];
+		// 처음에는 tickerdata를 만들어 ticker, orderbook, tradehistory로 관리하려고 했음
+		// List<tickerdata> 형태로 관리하려고 했으나
+		// 티커는 고유한 값이므로 set으로 관리하는 것이 더 효율적일 것 같음
 
-        // 병렬처리 및 thread safe를 위한 Concurrent collections 사용
-        // { get; } 참조 추적
-        public ConcurrentBag<TradeHistory> TradeHistories { get; } = new();
+		public HashSet<string> Tickers { get; } = [];
+
+		// 병렬처리 및 thread safe를 위한 Concurrent collections 사용
+		// { get; } 참조 추적
+		public ConcurrentBag<TradeHistory> TradeHistories { get; } = new();
         public ConcurrentDictionary<string, OrderBook> OrderBooks { get; } = new();
 
         // 데이터 무결성을 위한 TickerLocks
@@ -26,7 +30,7 @@ namespace QuantDeriv.Back.Repositories
 
         public TradeDataRepository()
         {
-            Random random = new Random();
+            var random = new Random();
             GenerateRandomTicker(random);
             AddSampleOrderBookData(random);
             GenerateSampleTradeHistories(random);
@@ -47,7 +51,7 @@ namespace QuantDeriv.Back.Repositories
                 }
 
                 var ticker = new string(tickerChars);
-                Tickers.Add(ticker);
+				Tickers.Add(ticker);
                 OrderBooks.TryAdd(ticker, new OrderBook());
                 TickerLocks.TryAdd(ticker, new object());
             }
@@ -84,9 +88,11 @@ namespace QuantDeriv.Back.Repositories
         // TradeHistory는 랜덤하게 10개 생성
         public void GenerateSampleTradeHistories(Random random)
         {
-            for (int i = 0; i < MaxSampleHistoryCount; i++)
+            var tickerList = Tickers.ToList();
+
+			for (int i = 0; i < MaxSampleHistoryCount; i++)
             {
-                var ticker = Tickers[random.Next(Tickers.Count)];
+                var ticker = tickerList[random.Next(Tickers.Count)];
                 var price = random.Next(1, 100);
                 var quantity = random.Next(1, 20);
                 TradeHistories.Add(new TradeHistory(ticker, random.Next(0, 1) == 0 ? TradeSide.Buy : TradeSide.Sell, price, quantity, DateTime.UtcNow.AddSeconds(-random.Next(0, 3600))));
@@ -106,7 +112,7 @@ namespace QuantDeriv.Back.Repositories
             {
                 return new OrderBookUpdate(
                     ticker,
-                    orderBook.Asks.Values.Take(10).OrderByDescending(x => x.Price),
+                    orderBook.Asks.Values.TakeLast(10),
                     orderBook.Bids.Values.Take(10)
                 );
             }

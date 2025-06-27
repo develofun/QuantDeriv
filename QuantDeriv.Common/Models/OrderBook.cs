@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace QuantDeriv.Common.Models
 {
-    public class OrderBook
+	// backend에서 사용하는 주문서 정보로 common에 정의 안해도 됨
+	public class OrderBook
     {
-        public SortedDictionary<int, Order> Asks { get; set; } = new(Comparer<int>.Create((a, b) => a.CompareTo(b)));
+        public SortedDictionary<int, Order> Asks { get; set; } = new(Comparer<int>.Create((a, b) => b.CompareTo(a)));
 
         public SortedDictionary<int, Order> Bids { get; set; } = new(Comparer<int>.Create((a, b) => b.CompareTo(a)));
     }
 
-    public class OrderBookUpdate
+	// 클라에 전달되는 주문서 업데이트 정보
+	public class OrderBookUpdate
     {
         public OrderBookUpdate(string ticker, IEnumerable<Order> asks, IEnumerable<Order> bids)
         {

@@ -1,4 +1,4 @@
-using QuantDeriv.Back.Hubs;
+ï»¿using QuantDeriv.Back.Hubs;
 using QuantDeriv.Back.Interfaces;
 using QuantDeriv.Back.Repositories;
 using QuantDeriv.Back.Services;
@@ -11,18 +11,18 @@ builder.Services.AddSingleton<TradeDataRepository>();
 builder.Services.AddSingleton<IOrderService, OrderService>();
 builder.Services.AddSingleton<IOrderMatchService, OrderMatchService>();
 
-//ÀÚµ¿ ¸Å¸Å ½Ã¹Ä·¹ÀÌ¼Ç ¼­ºñ½º µî·Ï
-//builder.Services.AddHostedService<TradeSimulator>();
+//ìë™ ë§¤ë§¤ ì‹œë®¬ë ˆì´ì…˜ ì„œë¹„ìŠ¤ ë“±ë¡
+builder.Services.AddHostedService<TradeSimulator>();
 
-builder.Services.AddCors(options => {
-    options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost", "null")
-              .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
-});
+//builder.Services.AddCors(options => {
+//    options.AddDefaultPolicy(policy =>
+//        policy.WithOrigins("http://localhost", "null")
+//              .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+//});
 
 var app = builder.Build();
 
-app.UseCors();
+//app.UseCors();
 
 app.MapHub<TradeHubs>("/tradeHub");
 
