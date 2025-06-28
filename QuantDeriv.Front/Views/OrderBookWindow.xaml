@@ -19,7 +19,7 @@
                 SelectionMode="Single"
                 SelectionUnit="FullRow"
                 VerticalContentAlignment="Center"
-                RowHeaderWidth="0"
+                EnableRowVirtualization="True"
                 Height="431"
                 ColumnHeaderStyle="{StaticResource HeaderCenterAlign}" VerticalAlignment="Top">
 

@@ -12,6 +12,7 @@
         <DataGrid ItemsSource="{Binding Trades}" 
                   ColumnHeaderStyle="{StaticResource HeaderCenterAlign}"
                   AutoGenerateColumns="False" 
+                  EnableRowVirtualization="True"
                   IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Time" Binding="{Binding TradeTime, StringFormat='HH:mm:ss.fff'}" Width="*" ElementStyle="{StaticResource CellCenterAlign}"/>

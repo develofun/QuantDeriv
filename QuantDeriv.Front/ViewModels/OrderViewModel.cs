@@ -2,8 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using QuantDeriv.Common.Models;
 using QuantDeriv.Front.Interfaces;
-using QuantDeriv.Front.Services;
-using System;
 using System.Windows;
 
 namespace QuantDeriv.Front

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using QuantDeriv.Back.Interfaces;
 using QuantDeriv.Back.Repositories;
-using QuantDeriv.Back.Services;
 using QuantDeriv.Common.Models;
 
 namespace QuantDeriv.Back.Hubs
@@ -50,7 +49,7 @@ namespace QuantDeriv.Back.Hubs
 
         public IEnumerable<string> GetTickers()
         {
-            return _tradeDataRepository.Tickers;
+            return _tradeDataRepository.GetTickers();
         }
 
         public OrderBookUpdate GetOrderBook(string ticker)
@@ -60,7 +59,7 @@ namespace QuantDeriv.Back.Hubs
 
         public IEnumerable<TradeHistory> GetTradeHistory()
         {
-            return _tradeDataRepository.TradeHistories.OrderBy(th => th.TradeTime);
+            return _tradeDataRepository.GetTradeHistories();
         }
 
         #endregion

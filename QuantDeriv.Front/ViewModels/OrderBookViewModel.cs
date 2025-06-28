@@ -4,16 +4,10 @@ using QuantDeriv.Common.Enums;
 using QuantDeriv.Common.Models;
 using QuantDeriv.Front.Interfaces;
 using QuantDeriv.Front.Models;
-using QuantDeriv.Front.Services;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace QuantDeriv.Front
 {
@@ -22,11 +16,12 @@ namespace QuantDeriv.Front
         private readonly IWindowService _windowService;
         private readonly ISignalRService _signalRService;
 
-        [ObservableProperty] public string _ticker;
+        [ObservableProperty] private string _ticker;
 
-        public ObservableCollection<Order> Asks { get; } = new();
-        public ObservableCollection<Order> Bids { get; } = new();
-        public ObservableCollection<OrderBookGridItem> OrderBookSource { get; } = new();
+        public IList<Order> Asks { get; } = new ObservableCollection<Order>();
+        public IList<Order> Bids { get; } = new ObservableCollection<Order>();
+        public IList<OrderBookGridItem> OrderBookSource { get; } = new ObservableCollection<OrderBookGridItem>();
+        private List<OrderBookGridItem> _orderBookGridItems = [];
 
         public List<string> OrderTypes { get; } = Enum.GetNames(typeof(OrderType)).ToList();
 
@@ -57,50 +52,30 @@ namespace QuantDeriv.Front
         {
             if (update.Ticker != Ticker) return;
 
+            _orderBookGridItems.Clear();
+
+            // 1. 매도(Asks) 리스트 가공
+            var asksCount = update.Asks.Count();
+            _orderBookGridItems.AddRange(update.Asks.Select((ask, idx) => new OrderBookGridItem($"Ask {asksCount - idx}", ask.Price, ask.Quantity, "Ask")));
+
+            // 2. 중간 구분선 추가
+            if (update.Asks.Any() && update.Bids.Any())
+            {
+                _orderBookGridItems.Add(new OrderBookGridItem("", 0, 0, "Spread"));
+            }
+
+            // 3. 매수(Bids) 리스트 가공
+            // 서버에서 받은 Bids는 가격 내림차순 (bid1, bid2, ...)
+            var bidsCount = update.Bids.Count();
+            _orderBookGridItems.AddRange(update.Bids.Select((bid, idx) => new OrderBookGridItem($"Bid {bidsCount - idx}", bid.Price, bid.Quantity, "Bid")));
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 OrderBookSource.Clear();
 
-                // 1. 매도(Asks) 리스트 가공
-                // 서버에서 받은 Asks는 가격 오름차순 (ask1, ask2, ...)
-                // 화면에는 ask10..ask1 순으로 보여주기 위해 역순으로 처리
-                var asksToDisplay = update.Asks.Take(10).ToList();
-                var asksCount = asksToDisplay.Count();
-                for (int i = 0; i < asksCount; i++)
+                foreach(var item in _orderBookGridItems)
                 {
-                    var ask = update.Asks.ElementAt(i);
-                    string layer = $"Ask {asksCount - i}";
-                    OrderBookSource.Add(new OrderBookGridItem
-                    {
-                        Layer = layer,
-                        Price = ask.Price,
-                        Quantity = ask.Quantity,
-                        RowType = "Ask"
-                    });
-                }
-
-                // 2. 중간 구분선 추가
-                if (update.Asks.Any() && update.Bids.Any())
-                {
-                    OrderBookSource.Add(new OrderBookGridItem { RowType = "Spread" });
-                }
-
-                // 3. 매수(Bids) 리스트 가공
-                // 서버에서 받은 Bids는 가격 내림차순 (bid1, bid2, ...)
-                var bidsToDisplay = update.Bids.Take(10).ToList();
-                var bidsCount = bidsToDisplay.Count();
-                for (int i = 0; i < bidsCount; i++)
-                {
-                    var bid = update.Bids.ElementAt(i);
-                    // 리스트의 위에서부터 bid1, bid2, ... 로 표시
-                    string layer = $"Bid {i + 1}";
-                    OrderBookSource.Add(new OrderBookGridItem
-                    {
-                        Layer = layer,
-                        Price = bid.Price,
-                        Quantity = bid.Quantity,
-                        RowType = "Bid"
-                    });
+                    OrderBookSource.Add(item);
                 }
             });
         }
@@ -116,7 +91,7 @@ namespace QuantDeriv.Front
         {
             // 현재 호가창의 중간 가격을 초기 주문 가격으로 전달
             int initialPrice = 0;
-            var bestAsk = OrderBookSource.FirstOrDefault(i => i.RowType == "Ask")?.Price;
+            var bestAsk = OrderBookSource.LastOrDefault(i => i.RowType == "Ask")?.Price;
             var bestBid = OrderBookSource.FirstOrDefault(i => i.RowType == "Bid")?.Price;
             if (bestAsk.HasValue && bestBid.HasValue)
             {

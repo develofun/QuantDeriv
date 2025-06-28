@@ -1,16 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using QuantDeriv.Front.Interfaces;
-using QuantDeriv.Front.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 
 namespace QuantDeriv.Front
 {
@@ -32,6 +23,7 @@ namespace QuantDeriv.Front
             // SignalR 연결도 ViewModel 초기화의 일부로 이동
             await _signalRService.ConnectAsync();
             var tickers = await _signalRService.GetAvailableTickersAsync();
+
             foreach (var ticker in tickers)
             {
                 Tickers.Add(ticker);

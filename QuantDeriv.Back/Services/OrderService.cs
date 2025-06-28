@@ -4,7 +4,6 @@ using QuantDeriv.Back.Interfaces;
 using QuantDeriv.Back.Repositories;
 using QuantDeriv.Common.Enums;
 using QuantDeriv.Common.Models;
-using System.Diagnostics;
 
 namespace QuantDeriv.Back.Services
 {
@@ -14,10 +13,10 @@ namespace QuantDeriv.Back.Services
     public class OrderService: IOrderService
     {
         private readonly IOrderMatchService _orderMatchService;
-        private readonly TradeDataRepository _tradeDataRepository;
+        private readonly ITradeDataRepository _tradeDataRepository;
         private readonly IHubContext<TradeHubs> _hubContext;
 
-        public OrderService(IOrderMatchService orderMatchService, TradeDataRepository tradeDataRepository, IHubContext<TradeHubs> hubContext)
+        public OrderService(IOrderMatchService orderMatchService, ITradeDataRepository tradeDataRepository, IHubContext<TradeHubs> hubContext)
         {
             _orderMatchService = orderMatchService;
             _tradeDataRepository = tradeDataRepository;
@@ -73,7 +72,7 @@ namespace QuantDeriv.Back.Services
         /// <returns></returns>
         public async Task SendTradeHistoryUpdateAsync()
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveTradeHistoryUpdate", _tradeDataRepository.TradeHistories.OrderByDescending(th => th.TradeTime));
+            await _hubContext.Clients.All.SendAsync("ReceiveTradeHistoryUpdate", _tradeDataRepository.GetTradeHistories().OrderByDescending(th => th.TradeTime));
         }
 
         #endregion

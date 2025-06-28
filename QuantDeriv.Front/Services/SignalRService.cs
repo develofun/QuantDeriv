@@ -41,6 +41,8 @@ namespace QuantDeriv.Front.Services
         /// <returns></returns>
         public async Task SubscribeToTickerAsync(string ticker) => await _connection.InvokeAsync("SubscribeToTicker", ticker);
 
+        public async Task UnsubscribeFromTickerAsync(string ticker) => await _connection.InvokeAsync("UnsubscribeFromTicker", ticker);
+
         /// <summary>
         /// 사용 가능한 Ticker 목록 조회
         /// </summary>

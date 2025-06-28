@@ -1,4 +1,5 @@
-﻿using QuantDeriv.Common.Enums;
+﻿using QuantDeriv.Back.Interfaces;
+using QuantDeriv.Common.Enums;
 using QuantDeriv.Common.Models;
 using System.Collections.Concurrent;
 
@@ -7,10 +8,10 @@ namespace QuantDeriv.Back.Repositories
     /// <summary>
     /// 티커 및 거래 데이터 관리 Repository
     /// </summary>
-    public class TradeDataRepository
+    public class TradeDataRepository: ITradeDataRepository
     {
         // 샘플 데이터 생성용 constants
-        private const int MaxSampleTickerCount = 20;
+        private const int MaxSampleTickerCount = 1;
         private const int MaxSampleOrderBookCount = 10;
         private const int MaxSampleHistoryCount = 10;
 
@@ -18,12 +19,12 @@ namespace QuantDeriv.Back.Repositories
 		// List<tickerdata> 형태로 관리하려고 했으나
 		// 티커는 고유한 값이므로 set으로 관리하는 것이 더 효율적일 것 같음
 
-		public HashSet<string> Tickers { get; } = [];
+		private HashSet<string> Tickers { get; } = [];
 
 		// 병렬처리 및 thread safe를 위한 Concurrent collections 사용
 		// { get; } 참조 추적
-		public ConcurrentBag<TradeHistory> TradeHistories { get; } = new();
-        public ConcurrentDictionary<string, OrderBook> OrderBooks { get; } = new();
+		private ConcurrentBag<TradeHistory> TradeHistories { get; } = new();
+        private ConcurrentDictionary<string, OrderBook> OrderBooks { get; } = new();
 
         // 데이터 무결성을 위한 TickerLocks
         private readonly ConcurrentDictionary<string, object> TickerLocks = new();
@@ -86,7 +87,7 @@ namespace QuantDeriv.Back.Repositories
 
         // 생성된 티커 리스트 기준으로 TradeHistory를 생성
         // TradeHistory는 랜덤하게 10개 생성
-        public void GenerateSampleTradeHistories(Random random)
+        private void GenerateSampleTradeHistories(Random random)
         {
             var tickerList = Tickers.ToList();
 
@@ -99,10 +100,25 @@ namespace QuantDeriv.Back.Repositories
             }
         }
 
+        public IEnumerable<string> GetTickers()
+        {
+            return Tickers;
+        }
+
         // 티커별로 Lock 객체를 생성하여 동시성 문제를 방지
         public object GetTickerLock(string ticker)
         {
             return TickerLocks.GetOrAdd(ticker, t => new object());
+        }
+
+        public OrderBook GetOrderBook(string ticker)
+        {
+            if (OrderBooks.TryGetValue(ticker, out var orderBook))
+            {
+                return orderBook;
+            }
+
+            return null;
         }
 
         // 클라이언트에 전달할 OrderBookUpdate 객체 생성
@@ -120,5 +136,32 @@ namespace QuantDeriv.Back.Repositories
             return null;
         }
 
+        public void AddOrderBook(string ticker, OrderBook orderBook)
+        {
+            if (!string.IsNullOrWhiteSpace(ticker) && orderBook != null)
+            {
+                OrderBooks[ticker] = orderBook;
+            }
+        }
+
+        public void AddTradeHistory(TradeHistory tradeHistory)
+        {
+            if (tradeHistory != null && !string.IsNullOrWhiteSpace(tradeHistory.Ticker))
+            {
+                TradeHistories.Add(tradeHistory);
+            }
+        }
+
+        public IEnumerable<TradeHistory> GetTradeHistories(string ticker = "")
+        {
+            var histories = TradeHistories.OrderByDescending(th => th.TradeTime);
+
+            if (string.IsNullOrWhiteSpace(ticker))
+            {
+                return histories;
+            }
+
+            return histories.Where(th => th.Ticker.Equals(ticker, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

@@ -2,7 +2,6 @@
 using QuantDeriv.Back.Repositories;
 using QuantDeriv.Common.Enums;
 using QuantDeriv.Common.Models;
-using System;
 
 namespace QuantDeriv.Back.Services
 {
@@ -11,11 +10,11 @@ namespace QuantDeriv.Back.Services
     /// </summary>
     public class TradeSimulator : BackgroundService
     {
-        private readonly TradeDataRepository _tradeDataRepository;
+        private readonly ITradeDataRepository _tradeDataRepository;
         private readonly IOrderService _orderService;
         private readonly Random _random = new();
 
-        public TradeSimulator(TradeDataRepository tradeDataRepository, IOrderService orderService)
+        public TradeSimulator(ITradeDataRepository tradeDataRepository, IOrderService orderService)
         {
             _tradeDataRepository = tradeDataRepository;
             _orderService = orderService;
@@ -26,12 +25,12 @@ namespace QuantDeriv.Back.Services
             // 초기 시스템 대기 시간
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken); 
 
-            var tickers = _tradeDataRepository.Tickers.ToList();
-            var tickerCount = tickers.Count;
+            var tickers = _tradeDataRepository.GetTickers();
+            var tickerCount = tickers.Count();
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var ticker = tickers[_random.Next(tickerCount)];
+                var ticker = tickers.ElementAt(_random.Next(tickerCount));
 
                 OrderType type = _random.Next(0, 2) == 0 ? OrderType.Ask : OrderType.Bid;
                 int price = type == OrderType.Ask ? _random.Next(40, 100) : _random.Next(1, 60);

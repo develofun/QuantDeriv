@@ -1,5 +1,4 @@
-﻿using System;
-namespace QuantDeriv.Common.Models
+﻿namespace QuantDeriv.Common.Models
 {
 	// backend에서 사용하는 주문서 정보로 common에 정의 안해도 됨
 	public class OrderBook
@@ -9,25 +8,27 @@ namespace QuantDeriv.Common.Models
         public SortedDictionary<int, Order> Bids { get; set; } = new(Comparer<int>.Create((a, b) => b.CompareTo(a)));
     }
 
-	// 클라에 전달되는 주문서 업데이트 정보
-	public class OrderBookUpdate
-    {
-        public OrderBookUpdate(string ticker, IEnumerable<Order> asks, IEnumerable<Order> bids)
-        {
-            Ticker = ticker;
-            Asks = asks;
-            Bids = bids;
-        }
+    public record OrderBookUpdate(string Ticker, IEnumerable<Order> Asks, IEnumerable<Order> Bids);
 
-        public string Ticker { get; set; }
+    // 클라에 전달되는 주문서 업데이트 정보
+    //public class OrderBookUpdate
+    //{
+    //    public OrderBookUpdate(string ticker, IEnumerable<Order> asks, IEnumerable<Order> bids)
+    //    {
+    //        Ticker = ticker;
+    //        Asks = asks;
+    //        Bids = bids;
+    //    }
 
-        public IEnumerable<Order> Asks { get; set; }
+    //    public string Ticker { get; set; }
 
-        public IEnumerable<Order> Bids { get; set; }
+    //    public IEnumerable<Order> Asks { get; set; }
 
-        public bool IsValid()
-        {
-            return !string.IsNullOrWhiteSpace(Ticker) && Asks.Any() && Bids.Any();
-        }
-    }
+    //    public IEnumerable<Order> Bids { get; set; }
+
+    //    public bool IsValid()
+    //    {
+    //        return !string.IsNullOrWhiteSpace(Ticker) && Asks.Any() && Bids.Any();
+    //    }
+    //}
 }

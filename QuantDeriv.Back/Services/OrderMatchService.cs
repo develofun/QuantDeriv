@@ -1,18 +1,15 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using QuantDeriv.Back.Hubs;
-using QuantDeriv.Back.Interfaces;
+﻿using QuantDeriv.Back.Interfaces;
 using QuantDeriv.Back.Repositories;
 using QuantDeriv.Common.Enums;
 using QuantDeriv.Common.Models;
-using System.Diagnostics;
 
 namespace QuantDeriv.Back.Services
 {
     public class OrderMatchService: IOrderMatchService
     {
-        private readonly TradeDataRepository _tradeDataRepository;
+        private readonly ITradeDataRepository _tradeDataRepository;
 
-        public OrderMatchService(TradeDataRepository tradeDataRepository)
+        public OrderMatchService(ITradeDataRepository tradeDataRepository)
         {
             _tradeDataRepository = tradeDataRepository;
         }
@@ -31,7 +28,7 @@ namespace QuantDeriv.Back.Services
                 var lockObject = _tradeDataRepository.GetTickerLock(newOrder.Ticker);
                 lock (lockObject)
                 {
-                    var orderBook = _tradeDataRepository.OrderBooks[newOrder.Ticker];
+                    var orderBook = _tradeDataRepository.GetOrderBook(newOrder.Ticker);
 
                     if (newOrder.Type == OrderType.Ask)
                     {
@@ -61,7 +58,7 @@ namespace QuantDeriv.Back.Services
 
                 int tradeQuantity = Math.Min(sellOrder.Quantity, bidOrder.Quantity);
 
-                _tradeDataRepository.TradeHistories.Add(new TradeHistory(sellOrder.Ticker, TradeSide.Sell, bidOrder.Price, tradeQuantity, DateTime.UtcNow));
+                _tradeDataRepository.AddTradeHistory(new TradeHistory(sellOrder.Ticker, TradeSide.Sell, bidOrder.Price, tradeQuantity, DateTime.UtcNow));
 
                 sellOrder.Quantity -= tradeQuantity;
                 bidOrder.Quantity -= tradeQuantity;
@@ -92,7 +89,7 @@ namespace QuantDeriv.Back.Services
 
                 int tradeQuantity = Math.Min(buyOrder.Quantity, askOrder.Quantity);
 
-                _tradeDataRepository.TradeHistories.Add(new TradeHistory(buyOrder.Ticker, TradeSide.Buy, askOrder.Price, tradeQuantity, DateTime.UtcNow));
+                _tradeDataRepository.AddTradeHistory(new TradeHistory(buyOrder.Ticker, TradeSide.Buy, askOrder.Price, tradeQuantity, DateTime.UtcNow));
 
                 buyOrder.Quantity -= tradeQuantity;
                 askOrder.Quantity -= tradeQuantity;
